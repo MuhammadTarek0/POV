@@ -1,0 +1,226 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <canvas id="canvas" width="700" height="600" style="border:dotted"></canvas>
+    <script>
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            var width = canvas.width;
+            var height = canvas.height;
+            var offsetx, offsety, Radius, StartAngle, EndAngle, CenterX, CenterY;
+
+            function init(ctx) {
+                ///<param name="ctx" type="CanvasRenderingContext2D"/>
+                canvas.width = canvas.width;
+                ctx.translate(width / 2, height / 2);
+                ctx.scale(1, -1);
+                
+                ctx.beginPath();
+
+                //Drawing my axis
+                ctx.moveTo(-width, 0);
+                ctx.lineTo(width, 0);
+                ctx.moveTo(0, height);
+                ctx.lineTo(0, -height);
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                //Inputs :: change the angles to change the field of vision 
+                Radius = 200;
+                StartAngle = 0.3;
+                EndAngle = 1.2;
+                CenterX = 0;
+                CenterY = 0;
+
+                //Drawing my Region
+                ctx.moveTo(CenterX, CenterY);
+                ctx.arc(CenterX, CenterY, Radius, StartAngle, EndAngle);
+                ctx.closePath();
+
+                X1 = Radius * Math.cos(StartAngle) + CenterX;
+                Y1 = Radius * Math.sin(StartAngle) + CenterY;
+                X2 = Radius * Math.cos(EndAngle) + CenterX;
+                Y2 = Radius * Math.sin(EndAngle) + CenterY;
+                
+                var r = CheckMovement(X1,Y1,X2,Y2,offsetx,offsety);
+
+                if (r) {
+
+                    
+                    ctx.fillStyle = "black";
+                    ctx.fill();
+                }
+
+                else {
+
+                    
+                    ctx.fillStyle = "red";
+                    ctx.fill();
+                }
+
+            }
+
+            (function Update() {
+                requestAnimationFrame(Update);
+                init(ctx);
+                
+            })();
+
+            function GetQuad(X,Y) {
+                
+                    if (X > 0 && Y > 0) {
+
+                        Quad = 1;
+                    }
+                    else if (X < 0 && Y > 0) {
+
+                        Quad = 2;
+                    }
+                    else if (X < 0 && Y < 0) {
+
+                        Quad = 3;
+                    }
+                    else if (X > 0 && Y < 0) {
+
+                        Quad = 4;
+                    }
+
+            }
+
+            /*function GetPerpendicularDistance(PX1, PY1, PX2, PY2, MPX, MPY ) {
+
+                var m1, m2, c1, c2, OnlinePX, OnlinePY, X_R, Y_R;
+
+                m1 = ((PY2 - PY1) / (PX2 - PX1));
+                m2 = 1 / m1;
+
+                c1 = PY2 - m1 * PX2;
+                c2 = MPY - m2 * MPX;
+
+                OnlinePX = (c2 - c1) / (m1 - m2);
+                OnlinePY = m2 * OnlinePX + c2;
+
+                X_R = OnlinePX - MPX;
+                Y_R = OnlinePY - MPY;
+
+                return Math.sqrt(X_R * X_R + Y_R * Y_R);;
+
+            }*/
+
+            function CheckMovement(Point_1X, Point_1Y, Point_2X, Point_2Y, MouseX, MouseY) {
+
+                var QuadP1 = GetQuad(Point_1X, Point_1Y);
+                var QuadP2 = GetQuad(Point_2X, Point_2Y);
+                var QuadMouse = GetQuad(MouseX, MouseY);
+
+                if (Math.sqrt((Math.pow(MouseX - CenterX, 2) + Math.pow(MouseY - CenterY, 2))) > Radius){
+                    return false;
+                }
+                else if (QuadP1 == QuadP2) {
+
+                    if(QuadMouse == QuadP1)
+                    {
+                        if (Math.atan2(MouseY, MouseX) > StartAngle && Math.atan2(MouseY, MouseX) < EndAngle)
+                        {
+                            return true;
+                        }
+                    }
+
+                }
+                else {
+                    if (QuadMouse == QuadP1) {
+
+                        switch (QuadP1) {
+
+                            case 1: {
+
+                                if (Math.atan2(MouseY, MouseX) > StartAngle && Math.atan2(MouseY, MouseX) < Math.PI / 2) {
+                                    return true;
+                                }
+
+                            } break;
+                            case 2: {
+
+                                if (Math.atan2(MouseY, MouseX) > StartAngle && Math.atan2(MouseY, MouseX) < Math.PI / 0) {
+                                    return true;
+                                }
+
+                            } break;
+                            case 3: {
+
+                                if (Math.atan2(MouseY, MouseX) > StartAngle && Math.atan2(MouseY, MouseX) <  -Math.PI / 2) {
+                                    return true;
+                                }
+
+                            } break;
+                            case 4: {
+
+                                if (Math.atan2(MouseY, MouseX) > StartAngle && Math.atan2(MouseY, MouseX) < 0) {
+                                    return true;
+                                }
+
+                            } break;
+
+                            
+                        }
+                    }
+
+                    else if (QuadMouse == QuadP2) {
+
+                        switch (QuadP2) {
+
+                            case 1: {
+
+                                if (Math.atan2(MouseY, MouseX) > 0 && Math.atan2(MouseY, MouseX) < EndAngle) {
+                                    return true;
+                                }
+
+                            } break;
+                            case 2: {
+
+                                if (Math.atan2(MouseY, MouseX) > Math.PI/2 && Math.atan2(MouseY, MouseX) < EndAngle) {
+                                    return true;
+                                }
+
+                            } break;
+                            case 3: {
+
+                                if (Math.atan2(MouseY, MouseX) > 0 && Math.atan2(MouseY, MouseX) < EndAngle) {
+                                    return true;
+                                }
+
+                            } break;
+                            case 4: {
+
+                                if (Math.atan2(MouseY, MouseX) > -Math.PI/2 && Math.atan2(MouseY, MouseX) < EndAngle) {
+                                    return true;
+                                }
+
+                            } break;
+
+
+                        }
+
+                    }
+                }
+
+            }
+        
+            canvas.onmousemove = function (e) {
+                ///<param name="ctx" type="CanvasRenderingContext2D"/>
+
+                offsetx = e.offsetX - 350;
+                offsety = 300 - e.offsetY;
+              
+            }
+            
+            
+
+    </script>
+
+</body>
+</html>
